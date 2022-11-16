@@ -78,7 +78,7 @@ class DataTrainingArguments:
     """
 
     task_name: Optional[str] = field(
-        default=None,
+        default="cola",
         metadata={"help": "The name of the task to train on: " + ", ".join(task_to_keys.keys())},
     )
     dataset_name: Optional[str] = field(
