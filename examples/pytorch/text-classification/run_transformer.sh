@@ -3,7 +3,7 @@
 #SBATCH --output=/job_output/st_output.txt
 #SBATCH --error=/job_output/st_error.txt
 #SBATCH --ntasks=1
-#SBATCH --time=12:00:00
+#SBATCH --time=15:00:00
 #SBATCH --mem=16Gb
 #SBATCH --gres=gpu:1
 #SBATCH --partition=unkillable
@@ -13,6 +13,7 @@ GIT_DIR=$HOME/transformers/
 
 cd $GIT_DIR/examples/pytorch/text-classification
 
+module load anaconda
 module load python/3.9
 
 conda activate transformerenv
