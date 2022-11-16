@@ -13,7 +13,7 @@ GIT_DIR=$HOME/transformers/
 
 cd $GIT_DIR/examples/pytorch/text-classification
 
-module load python/3.9
+module load anaconda
 
 conda activate transformerenv
 
