@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=train_baseline
-#SBATCH --output=/job_output/st_output.txt
-#SBATCH --error=/job_output/st_error.txt
+#SBATCH --output=st_output.txt
+#SBATCH --error=st_error.txt
 #SBATCH --ntasks=1
 #SBATCH --time=12:00:00
 #SBATCH --mem=16Gb
