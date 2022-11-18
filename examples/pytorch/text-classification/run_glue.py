@@ -28,6 +28,8 @@ import numpy as np
 from datasets import load_dataset
 
 import evaluate
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+
 import transformers
 from transformers import (
     AutoConfig,
@@ -45,7 +47,6 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
-
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.25.0.dev0")
@@ -149,7 +150,7 @@ class DataTrainingArguments:
             assert train_extension in ["csv", "json"], "`train_file` should be a csv or a json file."
             validation_extension = self.validation_file.split(".")[-1]
             assert (
-                validation_extension == train_extension
+                    validation_extension == train_extension
             ), "`validation_file` should have the same extension (csv or json) as `train_file`."
 
 
@@ -291,7 +292,7 @@ def main():
                 train_extension = data_args.train_file.split(".")[-1]
                 test_extension = data_args.test_file.split(".")[-1]
                 assert (
-                    test_extension == train_extension
+                        test_extension == train_extension
                 ), "`test_file` should have the same extension (csv or json) as `train_file`."
                 data_files["test"] = data_args.test_file
             else:
@@ -392,9 +393,9 @@ def main():
     # Some models have set the order of the labels to use, so let's make sure we do use it.
     label_to_id = None
     if (
-        model.config.label2id != PretrainedConfig(num_labels=num_labels).label2id
-        and data_args.task_name is not None
-        and not is_regression
+            model.config.label2id != PretrainedConfig(num_labels=num_labels).label2id
+            and data_args.task_name is not None
+            and not is_regression
     ):
         # Some have all caps in their config, some don't.
         label_name_to_id = {k.lower(): v for k, v in model.config.label2id.items()}
@@ -479,7 +480,47 @@ def main():
 
     # You can define your custom compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.
-    def compute_metrics(p: EvalPrediction):
+
+    # IOANA: add our own metrics - more complex
+    # metrics utilities
+    prf_keys = ['precision', 'recall', 'fscore']
+
+    def add_metric_to_dict_per_class(metrics_dict, metric_tuple, average_type):
+        for i, prf_key in enumerate(prf_keys):
+            metrics_dict[prf_key + '_' + average_type] = metric_tuple[i]
+
+    def do_metrics(labels, preds):
+        """
+            Compute precision, recall, fscore
+            Return a dictionary with floats for easy logging with util functions
+        """
+        prf = precision_recall_fscore_support(labels, preds)
+        #micro = precision_recall_fscore_support(labels, preds, average="micro")
+        #macro = precision_recall_fscore_support(labels, preds, average="macro")
+        #weighted = precision_recall_fscore_support(labels, preds, average="weighted")
+        accuracy = (preds == labels).astype(np.float32).mean().item()
+        metrics_dict = {
+            "accuracy": accuracy,
+        }
+
+        for i, prf_key in enumerate(prf_keys):
+            metrics = prf[i]
+            for kclass in range(num_labels):
+                metrics_dict[prf_key + '_' + model.config.id2label[kclass]] = metrics[kclass]
+        # add micro, macro, weighted
+        #add_metric_to_dict_per_class(metrics_dict, micro, 'micro')
+        #add_metric_to_dict_per_class(metrics_dict, macro, 'macro')
+        #add_metric_to_dict_per_class(metrics_dict, weighted, 'weigthed')
+
+        # add confusion matrix
+        confusion = confusion_matrix(labels, preds)
+        for i in range(num_labels):
+            for j in range(num_labels):
+                metrics_dict['confusion_matrix_' + model.config.id2label[i] + '_' + model.config.id2label[j]] = \
+                confusion[i][j]
+        return metrics_dict
+
+    """def compute_metrics(p: EvalPrediction):
         preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds = np.squeeze(preds) if is_regression else np.argmax(preds, axis=1)
         if data_args.task_name is not None:
@@ -490,7 +531,7 @@ def main():
         elif is_regression:
             return {"mse": ((preds - p.label_ids) ** 2).mean().item()}
         else:
-            return {"accuracy": (preds == p.label_ids).astype(np.float32).mean().item()}
+            return {"accuracy": (preds == p.label_ids).astype(np.float32).mean().item()}"""
 
     # Data collator will default to DataCollatorWithPadding when the tokenizer is passed to Trainer, so we change it if
     # we already did the padding.
