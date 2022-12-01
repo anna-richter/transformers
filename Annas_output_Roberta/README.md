@@ -16,18 +16,18 @@ should probably proofread and complete it, then remove this comment. -->
 
 This model is a fine-tuned version of [roberta-base](https://huggingface.co/roberta-base) on an unknown dataset.
 It achieves the following results on the evaluation set:
-- Loss: 0.2207
-- Accuracy: 0.9376
-- Precision No: 0.9479
-- Precision Yes: 0.625
-- Recall No: 0.9871
-- Recall Yes: 0.2830
-- Fscore No: 0.9671
-- Fscore Yes: 0.3896
-- Confusion Matrix No No: 691
-- Confusion Matrix No Yes: 9
-- Confusion Matrix Yes No: 38
-- Confusion Matrix Yes Yes: 15
+- Loss: 0.2109
+- Accuracy: 0.9308
+- Precision No: 0.9531
+- Precision Yes: 0.6822
+- Recall No: 0.9710
+- Recall Yes: 0.5659
+- Fscore No: 0.9620
+- Fscore Yes: 0.6186
+- Confusion Matrix No No: 1138
+- Confusion Matrix No Yes: 34
+- Confusion Matrix Yes No: 56
+- Confusion Matrix Yes Yes: 73
 
 ## Model description
 
