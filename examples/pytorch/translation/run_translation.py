@@ -143,7 +143,7 @@ class DataTrainingArguments:
         },
     )
     max_target_length: Optional[int] = field(
-        default=128,
+        default=1024,
         metadata={
             "help": (
                 "The maximum total sequence length for target text after tokenization. Sequences longer "
@@ -236,7 +236,7 @@ class DataTrainingArguments:
 
         # accepting both json and jsonl file extensions, as
         # many jsonlines files actually have a .json extension
-        valid_extensions = ["json", "jsonl"]
+        valid_extensions = ["json", "jsonl",'csv']
 
         if self.train_file is not None:
             extension = self.train_file.split(".")[-1]
@@ -443,8 +443,10 @@ def main():
         )
 
     def preprocess_function(examples):
-        inputs = [ex[source_lang] for ex in examples["translation"]]
-        targets = [ex[target_lang] for ex in examples["translation"]]
+        inputs = examples['datapoint']
+        targets = examples['rewritten_text']
+        # inputs = [ex[source_lang] for ex in examples]
+        # targets = [ex[target_lang] for ex in examples]
         inputs = [prefix + inp for inp in inputs]
         model_inputs = tokenizer(inputs, max_length=data_args.max_source_length, padding=padding, truncation=True)
 
